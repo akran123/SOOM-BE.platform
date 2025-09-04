@@ -15,7 +15,7 @@ data_queue = Queue()
 # MQTT 설정
 MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
-MQTT_TOPIC = "sensor/#"
+MQTT_TOPIC = os.getenv("MQTT_TOPIC")
 
 # InfluxDB 설정
 INFLUXDB_URL = "http://localhost:8086"
