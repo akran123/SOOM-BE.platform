@@ -82,7 +82,23 @@ def influx_worker() :
                     .field("light", float(payload['light']))
                     .time(now_kst, WritePrecision.MS)
                 )
-
+            elif topic == "sensor/csi_measurement" :
+                point = (
+                    Point("csi_measurement")
+                    .tag("type", payload["type"])                     # 문자열: 측정 유형
+                    .tag("mac", payload["mac"])                       # 문자열: 송신자 MAC
+                    .tag("device_id", payload["device_id"])           # 문자열: 디바이스 ID
+                    .field("rssi", int(payload["rssi"]))              # int: 신호 세기
+                    .field("rate", int(payload["rate"]))              # int: 전송 속도
+                    .field("sig_mode", int(payload["sig_mode"]))      # int: 신호 모드
+                    .field("mcs", int(payload["mcs"]))                # int: MCS 값
+                    .field("ch_width", int(payload["ch_width"]))      # int: 채널 폭
+                    .field("secondary_channel", int(payload["secondary_channel"]))  # int: 보조 채널
+                    .field("real_time_timestamp_us", int(payload["real_time_timestamp_us"]))  # 정밀 타임스탬프
+                    .field("rx_state", int(payload["rx_state"]))      # int: 수신 상태
+                    .field("csi_data_raw", str(payload["csi_data_raw"]))  # 문자열: CSI 데이터
+                    .time(now_kst, WritePrecision.MS))                 # 기록 시각: 밀리초 정밀도
+                    
             if point:
                 write_api.write(bucket=INFLUXDB_BUCKET, record=point)
                 print(f"[{topic}] 저장 완료 ")
