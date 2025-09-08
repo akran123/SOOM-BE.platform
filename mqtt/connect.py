@@ -41,7 +41,7 @@ def on_message(client, userdata, msg):
         print("수신 에러:", e)
 
 # 큐에서 꺼내 InfluxDB에 쓰는 워커 스레드
-def influx_worker():
+def influx_worker() :
     kst = timezone(timedelta(hours=9))
     while True:
         topic, payload = data_queue.get()
