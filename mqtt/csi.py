@@ -40,7 +40,6 @@ def on_message(client, userdata, msg):
     except Exception as e:
         print("수신 에러:", e)
 
-# 큐에서 꺼내 InfluxDB에 쓰는 워커 스레드
 def influx_worker() :
     kst = timezone(timedelta(hours=9))
     while True:
@@ -48,41 +47,22 @@ def influx_worker() :
         try:
             now_kst = datetime.now(kst)
             point = None
-
-            if topic == "sensor/aircondition":
+            if topic == "sensor/csi_measurement" :
                 point = (
-                    Point("aircondition_sensor")
-                    .field("temperature", float(payload['temperature']))
-                    .field("humidity", float(payload['humidity']))
-                    .field("pan", float(payload['pan']))
-                    .field("peltier", float(payload['peltier']))
-                    .time(now_kst, WritePrecision.S)
-                )
-
-            elif topic == "sensor/air_purifier":
-                point = (
-                    Point("air_purifier_sensor")
-                    .field("air_status", float(payload['air_status']))
-                    .field("pan", float(payload['pan']))
-                    .time(now_kst, WritePrecision.S)
-                )
-
-            elif topic == "sensor/smart_curtain":
-                point = (
-                    Point("smart_curtain")
-                    .field("switch", int(payload['switch']))
-                    .field("pan", float(payload['pan']))
-                    .time(now_kst, WritePrecision.S)
-                )
-
-            elif topic == "sensor/smart_light":
-                point = (
-                    Point("smart_light")
-                    .field("illuminance", int(payload['illuminance']))
-                    .field("light", float(payload['light']))
-                    .time(now_kst, WritePrecision.S)
-                )
-                         
+                    Point("csi_measurement")
+                    .tag("type", payload["type"])                     # 문자열: 측정 유형
+                    .tag("mac", payload["mac"])                       # 문자열: 송신자 MAC
+                    .tag("device_id", payload["device_id"])           # 문자열: 디바이스 ID
+                    .field("rssi", int(payload["rssi"]))              # int: 신호 세기
+                    .field("rate", int(payload["rate"]))              # int: 전송 속도
+                    .field("sig_mode", int(payload["sig_mode"]))      # int: 신호 모드
+                    .field("mcs", int(payload["mcs"]))                # int: MCS 값
+                    .field("ch_width", int(payload["ch_width"]))      # int: 채널 폭
+                    .field("secondary_channel", int(payload["secondary_channel"]))  # int: 보조 채널
+                    .field("real_time_timestamp_us", int(payload["real_time_timestamp_us"]))  # 정밀 타임스탬프
+                    .field("rx_state", int(payload["rx_state"]))      # int: 수신 상태
+                    .field("csi_data_raw", str(payload["csi_data_raw"]))  # 문자열: CSI 데이터
+                    .time(now_kst, WritePrecision.MS))                 # 기록 시각: 밀리초 정밀도
                     
             if point:
                 write_api.write(bucket=INFLUXDB_BUCKET, record=point)
