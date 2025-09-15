@@ -33,6 +33,7 @@ write_api = influx_client.write_api()
 
 # MQTT 메시지 수신 → 큐에 저장
 def on_message(client, userdata, msg):
+    print(msg.topic)
     try:
         payload = json.loads(msg.payload.decode())
         topic = msg.topic
